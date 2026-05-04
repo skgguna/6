@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes, viewport-fit=cover">
+  <title>🌸 梦幻动漫换装 · 百变衣橱</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: linear-gradient(160deg, #fde2e9 0%, #e8d5f5 40%, #d5e8f7 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'Quicksand', sans-serif;
+      padding: 15px;
+    }
+    .game-wrapper {
+      background: rgba(255, 250, 252, 0.75);
+      backdrop-filter: blur(25px);
+      border-radius: 55px;
+      padding: 20px 20px 25px;
+      box-shadow: 0 30px 50px rgba(150, 100, 140, 0.3), inset 0 0 25px rgba(255,255,255,0.7);
+      max-width: 750px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #9b5f7c;
+      letter-spacing: 3px;
+      text-shadow: 2px 2px 0 white;
+    }
+    .canvas-container {
+      background: #fef5f9;
+      border-radius: 65px;
+      padding: 12px;
+      box-shadow: inset 0 0 25px #f0c8da, 0 18px 30px rgba(150, 90, 120, 0.3);
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 420px;
+      border-radius: 50px;
+      background: #fffafd;
+      box-shadow: 0 8px 20px rgba(160, 100, 130, 0.25);
+      touch-action: none;
+    }
+    .wardrobe-panel {
+      margin-top: 20px;
+      background: #ffffffcc;
+      backdrop-filter: blur(20px);
+      border-radius: 45px;
+      padding: 18px 15px;
+      width: 100%;
+      box-shadow: 0 15px 30px rgba(160, 110, 140, 0.2);
+      border: 1px solid #ffffff80;
+    }
+    .category-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .tab-btn {
+      background: #ffe9f1;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 35px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #805066;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(190, 130, 150, 0.2);
+      transition: all 0.2s;
+      letter-spacing: 0.8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid #fff5f8;
+    }
+    .tab-btn.active {
+      background: #f7b0c4;
+      color: white;
+      box-shadow: 0 8px 18px #e39fb3;
+    }
+    .items-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
+      min-height: 90px;
+      align-items: center;
+    }
+    .clothing-card {
+      background: #feeef4;
+      border-radius: 30px;
+      padding: 12px 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: grab;
+      user-select: none;
+      transition: 0.2s;
+      box-shadow: 0 8px 16px rgba(170, 110, 130, 0.2);
+      border: 2px solid transparent;
+      width: 80px;
+    }
+    .clothing-card:active {
+      cursor: grabbing;
+      transform: scale(0.94);
+    }
+    .clothing-card.selected {
+      border: 2px solid #f09bb8;
+      background: #ffe3ee;
+      box-shadow: 0 10px 20px #e8a3bb;
+    }
+    .card-icon {
+      font-size: 2.5rem;
+      pointer-events: none;
+    }
+    .card-name {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #7b4d5c;
+      background: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 16px;
+      justify-content: center;
+    }
+    .btn {
+      background: #f7cfdd;
+      border: none;
+      padding: 12px 27px;
+      border-radius: 35px;
+      font-weight: bold;
+      color: #613b46;
+      cursor: pointer;
+      font-size: 0.95rem;
+      box-shadow: 0 6px 15px #d4a2b2;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: 0.2s;
+      border: 1px solid #ffeef4;
+    }
+    .btn:hover {
+      background: #ffc2d5;
+    }
+    @media (max-width: 480px) {
+      .clothing-card {
+        width: 68px;
+        padding: 10px 6px 6px;
+      }
+      .card-icon {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="game-wrapper">
+  <div class="header">
+    <span style="font-size:2.2rem;">🎀</span>
+    <h1>梦幻衣橱</h1>
+    <span style="font-size:2.2rem;">✨</span>
+  </div>
+  <div class="canvas-container">
+    <canvas id="dressCanvas" width="420" height="540" aria-label="动漫少女换装画布"></canvas>
+  </div>
+
+  <div class="wardrobe-panel">
+    <div class="category-tabs">
+      <button class="tab-btn active" data-category="hair">💇 发型</button>
+      <button class="tab-btn" data-category="top">👚 上衣</button>
+      <button class="tab-btn" data-category="skirt">🩰 下装</button>
+      <button class="tab-btn" data-category="dress">👗 连衣裙</button>
+      <button class="tab-btn" data-category="accessory">🎀 头饰</button>
+      <button class="tab-btn" data-category="shoes">👠 鞋子</button>
+    </div>
+    <div class="items-grid" id="itemsContainer"></div>
+  </div>
+
+  <div class="action-buttons">
+    <button class="btn" id="randomBtn"><span>🎲</span> 随机搭配</button>
+    <button class="btn" id="resetBtn"><span>🔄</span> 还原初始</button>
+  </div>
+  <div style="margin-top:12px;color:#b1748b;font-size:0.8rem;">
+    💡 点击服饰卡片直接换装 | 手机同样支持
+  </div>
+</div>
+
+<script>
+  (function() {
+    const canvas = document.getElementById('dressCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ---------- 服饰库（动漫风格丰富配色） ----------
+    const wardrobe = {
+      hair: [
+        { id: 'hair1', name: '樱粉长发', icon: '🌸', color: '#f9b8c9', style: 'long' },
+        { id: 'hair2', name: '天蓝短发', icon: '💙', color: '#a3d4f2', style: 'short' },
+        { id: 'hair3', name: '蜜茶卷发', icon: '🍂', color: '#d9b382', style: 'curly' },
+        { id: 'hair4', name: '薰衣草紫', icon: '💜', color: '#c7b3e5', style: 'long' },
+        { id: 'hair5', name: '经典黑长直', icon: '🖤', color: '#4a3f47', style: 'longStraight' }
+      ],
+      top: [
+        { id: 'top1', name: '水手服', icon: '⚓', color: '#f0f4fc', secondary: '#4f7db3' },
+        { id: 'top2', name: '针织毛衣', icon: '🧶', color: '#fad6c0', secondary: '#e0916a' },
+        { id: 'top3', name: '蕾丝衬衫', icon: '🤍', color: '#fef8f0', secondary: '#dbb0a0' },
+        { id: 'top4', name: '偶像夹克', icon: '🌟', color: '#fce4ec', secondary: '#d4819a' }
+      ],
+      skirt: [
+        { id: 'skirt1', name: '格子短裙', icon: '🔴', color: '#c9384b', pattern: 'plaid' },
+        { id: 'skirt2', name: '百褶裙', icon: '📘', color: '#3f5c8a', pattern: 'pleats' },
+        { id: 'skirt3', name: '纱纱蓬蓬裙', icon: '☁️', color: '#f9d7e5', pattern: 'fluffy' }
+      ],
+      dress: [
+        { id: 'dress1', name: '梦幻公主裙', icon: '👸', color: '#fbc2d9', secondary: '#f5e1f0' },
+        { id: 'dress2', name: '和风浴衣', icon: '🏮', color: '#e65b4b', secondary: '#f7d794' },
+        { id: 'dress3', name: '学院连衣裙', icon: '📚', color: '#2c4b6b', secondary: '#d7cbb9' },
+        { id: 'dress4', name: '花嫁婚纱', icon: '💒', color: '#fefefe', secondary: '#fcedf2' }
+      ],
+      accessory: [
+        { id: 'acc1', name: '蝴蝶结发带', icon: '🎀', color: '#f7768e' },
+        { id: 'acc2', name: '猫耳发箍', icon: '🐱', color: '#e0c0d0' },
+        { id: 'acc3', name: '花朵头饰', icon: '🌺', color: '#f7a8b0' },
+        { id: 'acc4', name: '小皇冠', icon: '👑', color: '#f9d56e' }
+      ],
+      shoes: [
+        { id: 'shoe1', name: '可爱圆头鞋', icon: '🥿', color: '#f4a7b9' },
+        { id: 'shoe2', name: '过膝长靴', icon: '👢', color: '#5c4a4a' },
+        { id: 'shoe3', name: '魔法短靴', icon: '✨', color: '#b08bbb' }
+      ]
+    };
+
+    // 当前穿搭状态
+    let currentLook = {
+      hair: wardrobe.hair[0],      // 默认樱粉长发
+      top: null,
+      skirt: null,
+      dress: null,
+      accessory: null,
+      shoes: null
+    };
+
+    // ---------- 绘制动漫风格人物 ----------
+    function drawCharacter() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 皮肤基础色
+      const skin = '#ffead5';
+      const skinShadow = '#efc9a8';
+      const eyeColor = '#5e3a4c';
+
+      // ----- 身体轮廓（优雅动漫比例）-----
+      // 脖子
+      ctx.fillStyle = skin;
+      ctx.beginPath();
+      ctx.rect(190, 195, 40, 30);
+      ctx.fill();
+      // 躯干 (服装会覆盖)
+      ctx.fillStyle = skin;
+      ctx.beginPath();
+      ctx.ellipse(210, 270, 48, 60, 0, 0, Math.PI*2);
+      ctx.fill();
+
+      // 手臂
+      ctx.fillStyle = skin;
+      ctx.beginPath();
+      ctx.ellipse(145, 255, 18, 38, -0.15, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(275, 255, 18, 38, 0.15, 0, Math.PI*2);
+      ctx.fill();
+
+      // 腿部
+      ctx.fillStyle = skin;
+      ctx.beginPath();
+      ctx.ellipse(170, 380, 22, 50, 0.05, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(250, 380, 22, 50, -0.05, 0, Math.PI*2);
+      ctx.fill();
+
+      // 脸部
+      ctx.fillStyle = skin;
+      ctx.strokeStyle = skinShadow;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(210, 140, 46, 52, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 五官 (大眼睛动漫风格)
+      ctx.fillStyle = eyeColor;
+      ctx.beginPath();
+      ctx.ellipse(188, 132, 10, 13, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(232, 132, 10, 13, 0, 0, Math.PI*2);
+      ctx.fill();
+      // 高光
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(192, 126, 4.5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(236, 126, 4.5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#f0b8c0';
+      ctx.beginPath();
+      ctx.arc(192, 128, 2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(236, 128, 2, 0, Math.PI*2);
+      ctx.fill();
+
+      // 眉毛
+      ctx.strokeStyle = '#6b4b56';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.arc(188, 118, 7, 0.2, Math.PI-0.2, true);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(232, 118, 7, 0.2, Math.PI-0.2, true);
+      ctx.stroke();
+
+      // 嘴巴
+      ctx.fillStyle = '#e07b8c';
+      ctx.beginPath();
+      ctx.arc(210, 158, 7, 0.1, Math.PI-0.1);
+      ctx.fill();
+      // 腮红
+      ctx.fillStyle = '#fcc9c0';
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.arc(170, 152, 13, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(250, 152, 13, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // 绘制发型
+    function drawHair(hairItem) {
+      if (!hairItem) return;
+      ctx.save();
+      const color = hairItem.color;
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#5e4045';
+      ctx.lineWidth = 2.2;
+      const style = hairItem.style || 'long';
+
+      // 基础发量
+      ctx.beginPath();
+      ctx.ellipse(210, 110, 50, 38, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      if (style.includes('long')) {
+        ctx.beginPath();
+        ctx.ellipse(165, 160, 24, 65, -0.3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(255, 160, 24, 65, 0.3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+      } else if (style === 'short') {
+        ctx.beginPath();
+        ctx.ellipse(162, 135, 22, 28, -0.2, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(258, 135, 22, 28, 0.2, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+      } else if (style === 'curly') {
+        for (let i=0; i<3; i++) {
+          ctx.beginPath();
+          ctx.ellipse(158 + i*6, 175 + i*4, 20, 32, 0.2, 0, Math.PI*2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.ellipse(262 - i*6, 175 + i*4, 20, 32, -0.2, 0, Math.PI*2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawTop(item) {
+      if (!item) return;
+      ctx.save();
+      ctx.fillStyle = item.color;
+      ctx.strokeStyle = '#b2808c';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(210, 255, 45, 46, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+      if (item.secondary) {
+        ctx.fillStyle = item.secondary;
+        ctx.beginPath();
+        ctx.ellipse(210, 225, 22, 14, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawSkirt(item) {
+      if (!item) return;
+      ctx.save();
+      ctx.fillStyle = item.color;
+      ctx.strokeStyle = '#9b6b7a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(175, 285);
+      ctx.lineTo(155, 375);
+      ctx.lineTo(265, 375);
+      ctx.lineTo(245, 285);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawDress(item) {
+      if (!item) return;
+      ctx.save();
+      ctx.fillStyle = item.color;
+      ctx.strokeStyle = '#ba8895';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.ellipse(210, 255, 46, 50, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(165, 275);
+      ctx.lineTo(148, 385);
+      ctx.lineTo(272, 385);
+      ctx.lineTo(255, 275);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      if (item.secondary) {
+        ctx.fillStyle = item.secondary;
+        ctx.beginPath();
+        ctx.ellipse(210, 310, 35, 16, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawAccessory(item) {
+      if (!item) return;
+      ctx.save();
+      ctx.fillStyle = item.color;
+      ctx.strokeStyle = '#9e6578';
+      ctx.lineWidth = 2;
+      if (item.id.includes('cat')) {
+        ctx.beginPath();
+        ctx.moveTo(175,70); ctx.lineTo(165,40); ctx.lineTo(185,65); ctx.fill(); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(245,70); ctx.lineTo(255,40); ctx.lineTo(235,65); ctx.fill(); ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(210, 70, 22, 14, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(183, 65, 16, 12, -0.3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(237, 65, 16, 12, 0.3, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawShoes(item) {
+      if (!item) return;
+      ctx.save();
+      ctx.fillStyle = item.color;
+      ctx.strokeStyle = '#705560';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(160, 432, 17, 13, 0.1, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(260, 432, 17, 13, -0.1, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
+
+    function render() {
+      drawCharacter();
+      drawHair(currentLook.hair);
+      if (currentLook.dress) {
+        drawDress(currentLook.dress);
+      } else {
+        if (currentLook.skirt) drawSkirt(currentLook.skirt);
+        if (currentLook.top) drawTop(currentLook.top);
+      }
+      drawShoes(currentLook.shoes);
+      drawAccessory(currentLook.accessory);
+    }
+
+    // 换装逻辑
+    function applyClothing(category, item) {
+      if (category === 'dress') {
+        currentLook.dress = item;
+        currentLook.top = null;
+        currentLook.skirt = null;
+      } else if (category === 'top' || category === 'skirt') {
+        currentLook.dress = null;
+        if (category === 'top') currentLook.top = item;
+        if (category === 'skirt') currentLook.skirt = item;
+      } else {
+        currentLook[category] = item;
+      }
+      render();
+    }
+
+    function removeCategoryItem(category) {
+      if (category === 'dress') currentLook.dress = null;
+      else if (category === 'top') currentLook.top = null;
+      else if (category === 'skirt') currentLook.skirt = null;
+      else currentLook[category] = null;
+      render();
+    }
+
+    // UI 渲染
+    let activeCategory = 'hair';
+    const itemsContainer = document.getElementById('itemsContainer');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+
+    function renderItems() {
+      const items = wardrobe[activeCategory] || [];
+      itemsContainer.innerHTML = '';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'clothing-card';
+        card.innerHTML = `<span class="card-icon">${item.icon}</span><span class="card-name">${item.name}</span>`;
+        card.addEventListener('click', () => {
+          applyClothing(activeCategory, item);
+        });
+        itemsContainer.appendChild(card);
+      });
+      // 添加卸下按钮
+      const removeCard = document.createElement('div');
+      removeCard.className = 'clothing-card';
+      removeCard.innerHTML = `<span class="card-icon">🚫</span><span class="card-name">卸下</span>`;
+      removeCard.addEventListener('click', () => removeCategoryItem(activeCategory));
+      itemsContainer.appendChild(removeCard);
+    }
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeCategory = btn.dataset.category;
+        renderItems();
+      });
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      currentLook = {
+        hair: wardrobe.hair[0],
+        top: null, skirt: null, dress: null, accessory: null, shoes: null
+      };
+      render();
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', ()=>{
+      const randomPick = (arr) => arr[Math.floor(Math.random()*arr.length)];
+      currentLook.hair = randomPick(wardrobe.hair);
+      currentLook.dress = Math.random()>0.5 ? randomPick(wardrobe.dress) : null;
+      if (!currentLook.dress) {
+        currentLook.top = randomPick(wardrobe.top);
+        currentLook.skirt = randomPick(wardrobe.skirt);
+      } else { currentLook.top=null; currentLook.skirt=null; }
+      currentLook.accessory = randomPick(wardrobe.accessory);
+      currentLook.shoes = randomPick(wardrobe.shoes);
+      render();
+    });
+
+    renderItems();
+    render();
+  })();
+</script>
+</body>
+</html>
