@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5, minimum-scale=0.5">
+  <title>🌸 甜美换装小游戏 · 拖拽装扮</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f9e7e7 0%, #fce4ec 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Quicksand', 'PingFang SC', '微软雅黑', sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+
+    .game-container {
+      background: rgba(255, 245, 247, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 60px 60px 50px 50px;
+      box-shadow: 0 30px 50px rgba(180, 100, 120, 0.25), inset 0 2px 10px rgba(255, 255, 255, 0.8);
+      padding: 25px 30px 35px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 700px;
+      width: fit-content;
+    }
+
+    h2 {
+      font-weight: 500;
+      color: #b36b7c;
+      letter-spacing: 4px;
+      margin-bottom: 15px;
+      font-size: 2rem;
+      text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 span {
+      font-size: 2.2rem;
+    }
+
+    .canvas-wrapper {
+      background: #ffeef4;
+      border-radius: 70px;
+      padding: 15px;
+      box-shadow: inset 0 0 20px #f5c1cd, 0 20px 30px rgba(160, 100, 110, 0.3);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 400px;
+      border-radius: 50px;
+      background: #fff5f9;
+      box-shadow: 0 8px 20px rgba(150, 80, 100, 0.2);
+      touch-action: none;  /* 避免触摸时页面滑动 */
+    }
+
+    .wardrobe {
+      margin-top: 25px;
+      background: #ffffffdd;
+      backdrop-filter: blur(15px);
+      border-radius: 100px;
+      padding: 20px 25px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      box-shadow: 0 15px 30px rgba(170, 110, 130, 0.25);
+      border: 1px solid #ffffff90;
+    }
+
+    .clothing-item {
+      background: transparent;
+      border: none;
+      cursor: grab;
+      transition: all 0.2s ease;
+      filter: drop-shadow(0 6px 12px rgba(130, 70, 90, 0.3));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+    }
+    .clothing-item:active {
+      cursor: grabbing;
+      transform: scale(0.96);
+      filter: drop-shadow(0 4px 8px rgba(130, 70, 90, 0.5));
+    }
+    .clothing-item.dragging {
+      opacity: 0.7;
+      cursor: grabbing;
+      transform: scale(0.9);
+    }
+
+    .clothing-icon {
+      font-size: 3.2rem;
+      background: #ffeef4;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 15px rgba(180, 110, 130, 0.3);
+      transition: 0.2s;
+      pointer-events: none; /* 让拖拽事件由父元素处理 */
+    }
+
+    .clothing-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #9c5b6d;
+      background: #fff0f3;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .reset-btn {
+      margin-top: 15px;
+      background: #facedd;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #6b3e4b;
+      background: #ffd9e2;
+      box-shadow: 0 5px 15px #d69eae;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 1px;
+      border: 1px solid #ffffffcc;
+    }
+    .reset-btn:hover {
+      background: #ffccd9;
+      box-shadow: 0 8px 18px #c48a9b;
+      transform: scale(1.02);
+    }
+    .reset-btn:active {
+      transform: scale(0.96);
+    }
+
+    .instruction {
+      color: #b57386;
+      font-size: 0.9rem;
+      margin-top: 12px;
+      background: #fff6f9;
+      padding: 6px 20px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    @media (max-width: 500px) {
+      .game-container {
+        padding: 15px 15px 25px;
+      }
+      .clothing-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <h2>
+    <span>👗</span> 梦幻衣橱 <span>🎀</span>
+  </h2>
+  <div class="canvas-wrapper">
+    <canvas id="gameCanvas" width="400" height="500" aria-label="换装画布，人物在中央"></canvas>
+  </div>
+
+  <!-- 可拖拽的服饰区域 -->
+  <div class="wardrobe" id="wardrobe">
+    <!-- 用data属性标记服饰类型，便于拖拽识别 -->
+    <div class="clothing-item" draggable="true" data-type="dress" data-color="#f7a8b8">
+      <div class="clothing-icon">👗</div>
+      <span class="clothing-label">连衣裙</span>
+    </div>
+    <div class="clothing-item" draggable="true" data-type="top" data-color="#b0d9f1">
+      <div class="clothing-icon">👚</div>
+      <span class="clothing-label">上衣</span>
+    </div>
+    <div class="clothing-item" draggable="true" data-type="skirt" data-color="#f9d8c6">
+      <div class="clothing-icon">🩰</div>
+      <span class="clothing-label">短裙</span>
+    </div>
+    <div class="clothing-item" draggable="true" data-type="accessory" data-color="#f5e56c">
+      <div class="clothing-icon">🎀</div>
+      <span class="clothing-label">蝴蝶结</span>
+    </div>
+    <div class="clothing-item" draggable="true" data-type="shoes" data-color="#e0b0c0">
+      <div class="clothing-icon">👠</div>
+      <span class="clothing-label">高跟鞋</span>
+    </div>
+  </div>
+
+  <button class="reset-btn" id="resetButton">
+    <span>🔄</span> 重新打扮
+  </button>
+  <div class="instruction">
+    <span>🖱️</span> 拖拽服饰到人物身上 <span>✨</span>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ----- 画布与绘图上下文 -----
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // ----- 游戏状态：当前穿戴的服饰 -----
+    // 结构: { dress: '#f7a8b8', top: '#b0d9f1', skirt: '#f9d8c6', accessory: '#f5e56c', shoes: '#e0b0c0' }
+    let currentOutfit = {
+      dress: null,      // 连衣裙 (会覆盖上衣+裙子)
+      top: null,
+      skirt: null,
+      accessory: null,
+      shoes: null
+    };
+
+    // 默认颜色（用于绘制服饰时的备用颜色）
+    const defaultColors = {
+      dress: '#f7a8b8',
+      top: '#b0d9f1',
+      skirt: '#f9d8c6',
+      accessory: '#f5e56c',
+      shoes: '#e0b0c0'
+    };
+
+    // ----- 绘制基础人物 (不包含可换服装部分) -----
+    function drawBaseCharacter() {
+      // 清空画布
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // ------- 皮肤底色与身体轮廓 (柔和风格) -------
+      // 脸部
+      ctx.save();
+      ctx.fillStyle = '#FFE0C0';
+      ctx.strokeStyle = '#DBAF8B';
+      ctx.lineWidth = 2;
+
+      // 脸 (椭圆)
+      ctx.beginPath();
+      ctx.ellipse(200, 140, 42, 48, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 脖子
+      ctx.fillStyle = '#FFE0C0';
+      ctx.strokeStyle = '#DBAF8B';
+      ctx.beginPath();
+      ctx.rect(185, 178, 30, 25);
+      ctx.fill();
+      ctx.stroke();
+
+      // 身体躯干 (浅色打底，服装会覆盖)
+      ctx.fillStyle = '#FFEEDB';
+      ctx.strokeStyle = '#DBAF8B';
+      ctx.beginPath();
+      ctx.ellipse(200, 255, 38, 55, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 双臂
+      ctx.fillStyle = '#FFE0C0';
+      ctx.strokeStyle = '#DBAF8B';
+      // 左臂
+      ctx.beginPath();
+      ctx.ellipse(148, 235, 18, 32, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 右臂
+      ctx.beginPath();
+      ctx.ellipse(252, 235, 18, 32, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 双腿 (裙子下方可见部分)
+      ctx.fillStyle = '#FFE0C0';
+      ctx.strokeStyle = '#DBAF8B';
+      // 左腿
+      ctx.beginPath();
+      ctx.ellipse(170, 340, 20, 45, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 右腿
+      ctx.beginPath();
+      ctx.ellipse(230, 340, 20, 45, -0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 面部细节 (眼睛、嘴巴、腮红)
+      ctx.fillStyle = '#4A2E2E';
+      ctx.beginPath();
+      ctx.arc(180, 130, 5, 0, Math.PI, true);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(220, 130, 5, 0, Math.PI, true);
+      ctx.fill();
+
+      // 眼睛高光
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(182, 128, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(222, 128, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 嘴巴微笑
+      ctx.strokeStyle = '#C96B6B';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(200, 152, 15, 0.2, Math.PI - 0.2);
+      ctx.stroke();
+
+      // 腮红
+      ctx.fillStyle = '#FAB0A0';
+      ctx.globalAlpha = 0.4;
+      ctx.beginPath();
+      ctx.arc(168, 147, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(232, 147, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+
+      // 头发 (棕色柔顺)
+      ctx.fillStyle = '#6B4F4A';
+      ctx.strokeStyle = '#4A3532';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.ellipse(200, 105, 44, 32, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 刘海
+      ctx.beginPath();
+      ctx.ellipse(180, 98, 15, 12, -0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(220, 98, 15, 12, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      // 侧发
+      ctx.beginPath();
+      ctx.ellipse(155, 128, 14, 28, -0.3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(245, 128, 14, 28, 0.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // ----- 根据当前currentOutfit绘制所有服饰 -----
+    function drawOutfit() {
+      // 注意绘制顺序：从内到外 (鞋子 -> 裙子/裤子 -> 上衣/连衣裙 -> 配饰)
+      
+      // 1. 鞋子 (绘制在腿部下方)
+      if (currentOutfit.shoes) {
+        drawShoes(currentOutfit.shoes);
+      }
+
+      // 2. 裙子或连衣裙下半部分 (连衣裙优先，会覆盖上衣+裙子单独绘制)
+      if (currentOutfit.dress) {
+        drawDress(currentOutfit.dress);
+      } else {
+        // 没有连衣裙时，分别绘制上衣和裙子
+        if (currentOutfit.skirt) {
+          drawSkirt(currentOutfit.skirt);
+        }
+        if (currentOutfit.top) {
+          drawTop(currentOutfit.top);
+        }
+      }
+
+      // 3. 配饰 (蝴蝶结等，画在头顶或衣领)
+      if (currentOutfit.accessory) {
+        drawAccessory(currentOutfit.accessory);
+      }
+    }
+
+    // 绘制连衣裙 (覆盖躯干和部分腿部)
+    function drawDress(color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#b08090';
+      ctx.lineWidth = 2;
+
+      // 连衣裙上身
+      ctx.beginPath();
+      ctx.ellipse(200, 240, 42, 48, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 裙摆 (下摆)
+      ctx.beginPath();
+      ctx.moveTo(158, 260);
+      ctx.lineTo(145, 330);
+      ctx.lineTo(255, 330);
+      ctx.lineTo(242, 260);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 装饰腰带
+      ctx.strokeStyle = '#D99BAC';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(200, 275, 36, 12, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 领口小花边
+      ctx.fillStyle = '#ffffffcc';
+      ctx.beginPath();
+      ctx.arc(185, 210, 8, 0, Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(215, 210, 8, 0, Math.PI);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 绘制上衣
+    function drawTop(color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#b08090';
+      ctx.lineWidth = 2;
+
+      // 上衣主体 (覆盖躯干上部)
+      ctx.beginPath();
+      ctx.ellipse(200, 235, 40, 42, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 领口设计
+      ctx.fillStyle = '#fff6f0';
+      ctx.beginPath();
+      ctx.ellipse(200, 208, 18, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#c0a0a0';
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // 绘制裙子
+    function drawSkirt(color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#b08090';
+      ctx.lineWidth = 2;
+
+      // 裙身 (梯形)
+      ctx.beginPath();
+      ctx.moveTo(170, 270);
+      ctx.lineTo(155, 340);
+      ctx.lineTo(245, 340);
+      ctx.lineTo(230, 270);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // 裙摆褶皱
+      ctx.strokeStyle = '#c0909a';
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 4; i++) {
+        let x = 175 + i * 18;
+        ctx.beginPath();
+        ctx.moveTo(x, 275);
+        ctx.lineTo(x - 4, 335);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 绘制鞋子
+    function drawShoes(color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#9b7a82';
+      ctx.lineWidth = 2;
+
+      // 左脚鞋
+      ctx.beginPath();
+      ctx.ellipse(158, 387, 16, 11, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 鞋跟
+      ctx.fillStyle = '#c0909a';
+      ctx.beginPath();
+      ctx.ellipse(150, 395, 6, 9, 0.1, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // 右脚鞋
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.ellipse(242, 387, 16, 11, -0.1, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#c0909a';
+      ctx.beginPath();
+      ctx.ellipse(250, 395, 6, 9, -0.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 绘制配饰 (蝴蝶结)
+    function drawAccessory(color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#b37b8c';
+      ctx.lineWidth = 2;
+
+      // 蝴蝶结中心在头顶偏右
+      const centerX = 230;
+      const centerY = 75;
+
+      // 左翼
+      ctx.beginPath();
+      ctx.ellipse(centerX - 18, centerY - 3, 14, 10, -0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 右翼
+      ctx.beginPath();
+      ctx.ellipse(centerX + 18, centerY - 3, 14, 10, 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 中心结
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 飘带
+      ctx.beginPath();
+      ctx.moveTo(centerX - 5, centerY + 6);
+      ctx.lineTo(centerX - 15, centerY + 25);
+      ctx.lineTo(centerX - 3, centerY + 18);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(centerX + 5, centerY + 6);
+      ctx.lineTo(centerX + 15, centerY + 25);
+      ctx.lineTo(centerX + 3, centerY + 18);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // ----- 整体绘制刷新 -----
+    function renderCanvas() {
+      drawBaseCharacter();
+      drawOutfit();
+    }
+
+    // ----- 换装逻辑：通过拖拽添加服饰 -----
+    function applyClothing(type, color) {
+      // 根据类型更新currentOutfit
+      // 规则：连衣裙会清除上衣和裙子；穿上衣/裙子会清除连衣裙
+      if (type === 'dress') {
+        currentOutfit.dress = color;
+        currentOutfit.top = null;
+        currentOutfit.skirt = null;
+      } else if (type === 'top') {
+        currentOutfit.top = color;
+        currentOutfit.dress = null;  // 连衣裙与上衣互斥
+      } else if (type === 'skirt') {
+        currentOutfit.skirt = color;
+        currentOutfit.dress = null;
+      } else if (type === 'accessory') {
+        currentOutfit.accessory = color;
+      } else if (type === 'shoes') {
+        currentOutfit.shoes = color;
+      }
+      renderCanvas();
+    }
+
+    // 重置所有服饰
+    function resetOutfit() {
+      currentOutfit = {
+        dress: null,
+        top: null,
+        skirt: null,
+        accessory: null,
+        shoes: null
+      };
+      renderCanvas();
+    }
+
+    // ----- 拖拽事件处理 -----
+    const clothingItems = document.querySelectorAll('.clothing-item');
+    const wardrobe = document.getElementById('wardrobe');
+
+    // 为每个服饰项目添加拖拽监听
+    clothingItems.forEach(item => {
+      item.addEventListener('dragstart', handleDragStart);
+      item.addEventListener('dragend', handleDragEnd);
+    });
+
+    let draggedItem = null;
+    let draggedType = null;
+    let draggedColor = null;
+
+    function handleDragStart(e) {
+      draggedItem = this;
+      draggedType = this.getAttribute('data-type');
+      draggedColor = this.getAttribute('data-color') || defaultColors[draggedType] || '#cccccc';
+      
+      // 设置拖拽数据（为了兼容）
+      e.dataTransfer.setData('text/plain', draggedType);
+      e.dataTransfer.effectAllowed = 'move';
+      
+      // 添加样式类
+      this.classList.add('dragging');
+    }
+
+    function handleDragEnd(e) {
+      if (draggedItem) {
+        draggedItem.classList.remove('dragging');
+      }
+      // 不立即清空，可能在drop中使用，但之后重置
+      // 延迟清空避免影响drop事件
+      setTimeout(() => {
+        draggedItem = null;
+        draggedType = null;
+        draggedColor = null;
+      }, 100);
+    }
+
+    // 画布允许放置
+    canvas.addEventListener('dragover', function(e) {
+      e.preventDefault(); // 必须阻止才能drop
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    canvas.addEventListener('drop', function(e) {
+      e.preventDefault();
+      
+      // 获取拖拽信息（可能从dragstart存储的变量，或从dataTransfer）
+      let type = draggedType;
+      let color = draggedColor;
+      
+      // 如果变量丢失（某些浏览器情况），尝试从dataTransfer获取类型，颜色用默认
+      if (!type) {
+        type = e.dataTransfer.getData('text/plain');
+        color = defaultColors[type] || '#d0a0b0';
+      }
+      
+      if (!type) return;
+      
+      // 检查放置位置是否在画布有效区域（简单判断，大体在人物范围）
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;   // canvas 物理像素比例
+      const scaleY = canvas.height / rect.height;
+      
+      const mouseCanvasX = (e.clientX - rect.left) * scaleX;
+      const mouseCanvasY = (e.clientY - rect.top) * scaleY;
+      
+      // 宽松的人物区域判定 (几乎整个画布都允许)
+      if (mouseCanvasX < 30 || mouseCanvasX > 370 || mouseCanvasY < 20 || mouseCanvasY > 460) {
+        // 稍微边缘外也允许，但为了体验，还是提示一下？静默忽略太偏的位置。
+        // 这里简单提示控制台，但不影响。
+      }
+      
+      // 应用换装
+      applyClothing(type, color);
+      
+      // 清理拖拽状态
+      if (draggedItem) {
+        draggedItem.classList.remove('dragging');
+      }
+      draggedItem = null;
+      draggedType = null;
+      draggedColor = null;
+    });
+
+    // 防止从画布拖走图片等默认行为
+    canvas.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // 重置按钮
+    document.getElementById('resetButton').addEventListener('click', resetOutfit);
+
+    // 触摸设备支持：由于移动端draggable可能体验不佳，增加touch事件作为备选
+    // 实现简单的触摸拖拽：记录触摸开始的目标服饰，在canvas上触摸结束时应用。
+    let touchDraggedType = null;
+    let touchDraggedColor = null;
+    let touchActiveItem = null;
+
+    function getClothingFromTouch(touch) {
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (element) {
+        const clothingDiv = element.closest('.clothing-item');
+        return clothingDiv;
+      }
+      return null;
+    }
+
+    document.addEventListener('touchstart', function(e) {
+      const touch = e.touches[0];
+      const item = getClothingFromTouch(touch);
+      if (item && item.hasAttribute('data-type')) {
+        touchActiveItem = item;
+        touchDraggedType = item.getAttribute('data-type');
+        touchDraggedColor = item.getAttribute('data-color') || defaultColors[touchDraggedType] || '#d0a0b0';
+        item.classList.add('dragging');
+        e.preventDefault(); // 防止页面滑动
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function(e) {
+      if (touchActiveItem) {
+        e.preventDefault(); // 阻止滚动
+      }
+    }, { passive: false });
+
+    document.addEventListener('touchend', function(e) {
+      if (!touchActiveItem) return;
+      
+      // 获取触摸结束位置
+      const touch = e.changedTouches[0];
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      
+      // 检查是否在canvas上释放
+      if (target && (target.id === 'gameCanvas' || target.closest('canvas'))) {
+        // 应用服饰
+        if (touchDraggedType) {
+          applyClothing(touchDraggedType, touchDraggedColor);
+        }
+      }
+      
+      // 清理状态
+      if (touchActiveItem) {
+        touchActiveItem.classList.remove('dragging');
+        touchActiveItem = null;
+      }
+      touchDraggedType = null;
+      touchDraggedColor = null;
+    });
+
+    // 初始渲染 (无服饰)
+    renderCanvas();
+
+    // 可选：默认穿上一件小裙子作为引导？为了展示效果，自动穿一件淡粉色连衣裙
+    setTimeout(() => {
+      // 温柔地给一个默认装扮，让用户知道可以拖拽替换
+      if (!currentOutfit.dress && !currentOutfit.top && !currentOutfit.skirt) {
+        applyClothing('dress', '#f7a8b8');
+        applyClothing('shoes', '#e0b0c0');
+      }
+    }, 50);
+  })();
+</script>
+</body>
+</html>
